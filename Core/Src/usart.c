@@ -39,7 +39,7 @@ void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 1000000;
+  huart2.Init.BaudRate = 115200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -114,13 +114,10 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 
 /* USER CODE BEGIN 1 */
 #include <stdio.h>
-int uart_putc(char ch, FILE *file)
+int fputc(int c, FILE *stream)
 {
-  HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
-  return ch;
+  uint8_t ch[] = {(uint8_t)c};
+  HAL_UART_Transmit(&huart2, ch, 1, HAL_MAX_DELAY);
+  return c;
 }
-static FILE __stdio = FDEV_SETUP_STREAM(uart_putc, NULL, NULL, _FDEV_SETUP_WRITE);
-FILE *const stdin = &__stdio;
-__strong_reference(stdin, stdout);
-__strong_reference(stdin, stderr);
 /* USER CODE END 1 */

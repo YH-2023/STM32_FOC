@@ -1,34 +1,26 @@
 #include "foc.h"
-#include "conf.h"
-#include "motor_runtime_param.h"
 #include "arm_math.h"
+#include "motor_runtime_param.h"
 #include <stdbool.h>
-#include <stdio.h>
 #define deg2rad(a) (PI * (a) / 180)
 #define rad2deg(a) (180 * (a) / PI)
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
-
-#define SQRT3 1.73205080756887729353
 #define rad60 deg2rad(60)
-static arm_pid_instance_f32 pid_position;
-static arm_pid_instance_f32 pid_speed;
-static arm_pid_instance_f32 pid_torque_d;
-static arm_pid_instance_f32 pid_torque_q;
+#define SQRT3 1.73205080756887729353
+
+arm_pid_instance_f32 pid_position;
+arm_pid_instance_f32 pid_speed;
+arm_pid_instance_f32 pid_torque_d;
+arm_pid_instance_f32 pid_torque_q;
 motor_control_context_t motor_control_context;
 
-/**
- * @brief 笛卡尔坐标系下的svpwm
- *
- * @param phi 转子角度
- * @param d d轴强度单位比例
- * @param q q轴强度单位比例
- * @param d_u u轴占空比
- * @param d_v v轴占空比
- * @param d_w w轴占空比
- */
 static void svpwm(float phi, float d, float q, float *d_u, float *d_v, float *d_w)
 {
+    d = min(d, 1);
+    d = max(d, -1);
+    q = min(q, 1);
+    q = max(q, -1);
     const int v[6][3] = {{1, 0, 0}, {1, 1, 0}, {0, 1, 0}, {0, 1, 1}, {0, 0, 1}, {1, 0, 1}};
     const int K_to_sector[] = {4, 6, 5, 5, 3, 1, 2, 2};
     float sin_phi = arm_sin_f32(phi);
@@ -59,104 +51,58 @@ __attribute__((weak)) void set_pwm_duty(float d_u, float d_v, float d_w)
         ;
 }
 
-/**
- * @brief foc计算函数，计算完成后，设置三相pwm
- *
- * @param u_d d轴电压，归一化
- * @param u_q q轴电压，归一化
- * @param rad 电机转子角度
- */
-void foc(float u_d, float u_q, float rad)
+void foc_forward(float d, float q, float rotor_rad)
 {
-    u_d = min(u_d, 1);
-    u_d = max(u_d, -1);
-    u_q = min(u_q, 1);
-    u_q = max(u_q, -1);
     float d_u = 0;
     float d_v = 0;
     float d_w = 0;
-    svpwm(rad, u_d, u_q, &d_u, &d_v, &d_w);
+    svpwm(rotor_rad, d, q, &d_u, &d_v, &d_w);
     set_pwm_duty(d_u, d_v, d_w);
 }
 
-/**
- * @brief 位置环，任意输出，可以输出速度到速度环、电流到电流环、直接输出q轴，不同的输出方式需要设置对应的pid参数
- *
- * @param rad
- * @return float 下一环的输入
- */
 static float position_loop(float rad)
 {
-    float diff = regular_diff(rad - motor_logic_angle, position_cycle);
-    // printf("%f\n", diff);
-    // printf("%f,%f,%f\n", diff, motor_logic_angle, rad);
+    float diff = cycle_diff(rad - motor_logic_angle, position_cycle);
     return arm_pid_f32(&pid_position, diff);
 }
 
-/**
- * @brief 速度环，任意输出，可以输出电流到电流环、直接输出q轴，不同的输出方式需要设置对应的pid参数
- *
- * @param speed_rad
- * @return float 下一环的输入
- */
 static float speed_loop(float speed_rad)
 {
     float diff = speed_rad - motor_speed;
-    // printf("%f\n", motor_speed);
-
     return arm_pid_f32(&pid_speed, diff);
 }
 
-/**
- * @brief 力矩环，输出d轴。
- *
- * @param i_d d轴电流，归一化
- * @return float d轴电压，归一化
- */
 static float torque_d_loop(float d)
 {
     float diff = d - motor_i_d / MAX_CURRENT;
-
     return arm_pid_f32(&pid_torque_d, diff);
 }
 
-/**
- * @brief 力矩环，输出q轴。
- *
- * @param q q轴电流，归一化
- * @return float q轴电压，归一化
- */
 static float torque_q_loop(float q)
 {
     float diff = q - motor_i_q / MAX_CURRENT;
-
     return arm_pid_f32(&pid_torque_q, diff);
 }
 
 void lib_position_control(float rad)
 {
-    float u_d = 0;
-    float u_q = position_loop(rad);
-    // printf("%f\n", u_q);
-    // printf("%f\n", rotor_phy_angle);
-
-    foc(u_d, u_q, rotor_logic_angle);
+    float d = 0;
+    float q = position_loop(rad);
+    foc_forward(d, q, rotor_logic_angle);
 }
 
 void lib_speed_control(float speed)
 {
-    float u_d = 0;
-    float u_q = speed_loop(speed);
-    // printf("%f\n", u_q);
-
-    foc(u_d, u_q, rotor_logic_angle);
+    float d = 0;
+    float q = speed_loop(speed);
+    foc_forward(d, q, rotor_logic_angle);
 }
 
 void lib_torque_control(float torque_norm_d, float torque_norm_q)
 {
     float d = torque_d_loop(torque_norm_d);
     float q = torque_q_loop(torque_norm_q);
-    foc(d, q, rotor_logic_angle);
+    foc_forward(d, q, rotor_logic_angle);
 }
 
 void lib_speed_torque_control(float speed_rad, float max_torque_norm)
@@ -200,10 +146,11 @@ void set_motor_pid(
     arm_pid_init_f32(&pid_torque_q, false);
 }
 
-float regular_diff(float diff, float cycle)
+float cycle_diff(float diff, float cycle)
 {
-    diff = fmodf(diff + cycle, cycle);
     if (diff > (cycle / 2))
         diff -= cycle;
+    else if (diff < (-cycle / 2))
+        diff += cycle;
     return diff;
 }

@@ -1,6 +1,6 @@
 #include "filter.h"
 
-void low_pass_filter(const float last, float *now, float alpha)
+float low_pass_filter(float input, float last_output, float alpha)
 {
-    *now = alpha * last + (1 - alpha) * (*now);
+    return alpha * input + (1.0 - alpha) * last_output;
 }

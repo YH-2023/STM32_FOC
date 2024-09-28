@@ -57,9 +57,15 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define pwm_counter_period (72*1000000/motor_pwm_freq)
 #define speed_calc_freq motor_speed_calc_freq
-#define angle_calc_freq 1300
+#define pwm_freq motor_pwm_freq
+#define MT6701_CSN_Pin GPIO_PIN_4
+#define MT6701_CSN_GPIO_Port GPIOA
+#define TIM1_Break_Pin GPIO_PIN_12
+#define TIM1_Break_GPIO_Port GPIOB
+#define TIM1_Break_EXTI_IRQn EXTI15_10_IRQn
+#define MY_LED_Pin GPIO_PIN_15
+#define MY_LED_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

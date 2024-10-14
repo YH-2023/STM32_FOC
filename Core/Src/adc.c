@@ -278,6 +278,9 @@ void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef *hadc)
     case control_type_torque:
       lib_torque_control(motor_control_context.torque_norm_d, motor_control_context.torque_norm_q);
       break;
+    case control_type_speed_torque:
+      lib_speed_torque_control(motor_control_context.speed, motor_control_context.max_torque_norm);
+      break;
     case control_type_position_speed_torque:
       lib_position_speed_torque_control(motor_control_context.position, motor_control_context.max_speed, motor_control_context.max_torque_norm);
       break;

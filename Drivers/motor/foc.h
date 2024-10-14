@@ -6,6 +6,7 @@ typedef enum
     control_type_position,              // 位置控制
     control_type_speed,                 // 速度控制
     control_type_torque,                // 力矩控制
+    control_type_speed_torque,          // 速度-力矩控制
     control_type_position_speed_torque, // 位置-速度-力矩控制
 } motor_control_type;
 
@@ -28,6 +29,7 @@ void foc_forward(float d, float q, float rotor_rad);
 void lib_position_control(float rad);                                                           // 位置（角度）控制
 void lib_speed_control(float speed);                                                            // 速度控制
 void lib_torque_control(float torque_norm_d, float torque_norm_q);                              // 力矩（电流）控制
+void lib_speed_torque_control(float speed, float max_torque_norm);                              // 速度-力矩控制
 void lib_position_speed_torque_control(float position, float max_speed, float max_torque_norm); // 位置-速度-力矩控制
 
 void set_motor_pid(

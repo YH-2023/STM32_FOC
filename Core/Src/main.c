@@ -139,10 +139,23 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  motor_control_context.torque_norm_d = 0;
+  motor_control_context.torque_norm_q = 0.2;
+  motor_control_context.type = control_type_torque;
+  HAL_Delay(1000);
   motor_control_context.position = deg2rad(90);
   motor_control_context.type = control_type_position;
   while (1)
   {
+    float u_1 = ADC_REFERENCE_VOLT * ((float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1) / ((1 << ADC_BITS) - 1));
+    float u_2 = ADC_REFERENCE_VOLT * ((float)HAL_ADCEx_InjectedGetValue(&hadc2, ADC_INJECTED_RANK_1) / ((1 << ADC_BITS) - 1));
+
+    printf("%.3f,%.3f,%.3f\n", motor_logic_angle, u_1, u_2);
+    HAL_Delay(100);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET);
+    HAL_Delay(100);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

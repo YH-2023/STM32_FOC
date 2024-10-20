@@ -166,7 +166,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
   {
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
     int angle_raw = (mt6701_rx_data[1] >> 2) | (mt6701_rx_data[0] << 6);
-    encoder_angle = 2 * 3.1415926 * angle_raw / ((1 << 14) - 1);
+    encoder_angle = 2 * PI * angle_raw / ((1 << 14) - 1);
 
     static float encoder_angle_last = 0;
     /****encoder_angle_last默认值是0，不能用于计算，要先赋值一次****/

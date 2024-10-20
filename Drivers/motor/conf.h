@@ -1,5 +1,5 @@
 #pragma once
-
+#include "global_def.h"
 // 电机物理参数：
 #define POLE_PAIRS 7 // 极对数
 
@@ -15,4 +15,4 @@
 #define motor_speed_calc_freq 930 // 电机速度计算频率，Hz
 
 // 软件参数：
-#define position_cycle 6 * 3.14159265358979 // 电机多圈周期，等于正半周期+负半周期
+#define position_cycle 6 * PI // 电机多圈周期，等于正半周期+负半周期

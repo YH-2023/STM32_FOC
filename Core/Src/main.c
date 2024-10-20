@@ -130,11 +130,11 @@ int main(void)
   HAL_ADCEx_Calibration_Start(&hadc2);
   HAL_ADCEx_InjectedStart_IT(&hadc1);
   HAL_ADCEx_InjectedStart(&hadc2);
-  set_pwm_duty(0.5, 0, 0);              // 形成SVPWM模型中的基础矢量1，即对应转子零度位置
+  set_pwm_duty(0.5, 0, 0);              // d轴强拖，形成SVPWM模型中的基础矢量1，即对应转子零度位置
   HAL_Delay(400);                       // 保持一会
-  rotor_zero_angle = motor_logic_angle; // 读取磁编码器数据，刚上电，用逻辑角度也可以
+  rotor_phy_angle = 0;
   set_pwm_duty(0, 0, 0);                // 松开电机
-  HAL_Delay(10);
+  HAL_Delay(100);
   /* USER CODE END 2 */
 
   /* Infinite loop */

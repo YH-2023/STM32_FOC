@@ -183,7 +183,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
     encoder_angle_last = _encoder_angle;
     // 实现周期操作，将motor_logic_angle转到周期内
     motor_logic_angle = cycle_diff(motor_logic_angle + diff_angle, position_cycle);
-
+    rotor_phy_angle = cycle_diff(rotor_phy_angle + diff_angle, 2 * PI);
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
     HAL_SPI_TransmitReceive_DMA(&hspi1, mt6701_rx_data, mt6701_rx_data, 3);
     return;

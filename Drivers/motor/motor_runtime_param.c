@@ -7,4 +7,5 @@ float motor_i_q;
 float motor_speed;
 float motor_logic_angle;
 float encoder_angle;
-float rotor_zero_angle;
+float rotor_phy_angle; // 转子物理角度
+

@@ -132,7 +132,7 @@ int main(void)
   HAL_ADCEx_InjectedStart(&hadc2);
   set_pwm_duty(0.5, 0, 0);              // d轴强拖，形成SVPWM模型中的基础矢量1，即对应转子零度位置
   HAL_Delay(400);                       // 保持一会
-  rotor_phy_angle = 0;
+  rotor_zero_angle = encoder_angle;
   set_pwm_duty(0, 0, 0);                // 松开电机
   HAL_Delay(100);
   /* USER CODE END 2 */
@@ -145,8 +145,13 @@ int main(void)
   HAL_Delay(1000);
   motor_control_context.position = deg2rad(90);
   motor_control_context.type = control_type_position;
+  // 速度模式
+  // motor_control_context.speed = 30;       //每秒转30弧度
+  // motor_control_context.type = control_type_speed;
+  //理论讲解以及FOC代码逐步实现讲解请前往查看：https://blog.csdn.net/qq570437459/category_12672491.html
   while (1)
   {
+    //以下为了测试电流采样硬件是否正常
     float u_1 = ADC_REFERENCE_VOLT * ((float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1) / ((1 << ADC_BITS) - 1));
     float u_2 = ADC_REFERENCE_VOLT * ((float)HAL_ADCEx_InjectedGetValue(&hadc2, ADC_INJECTED_RANK_1) / ((1 << ADC_BITS) - 1));
 

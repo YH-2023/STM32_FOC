@@ -62,7 +62,7 @@ void foc_forward(float d, float q, float rotor_rad)
 
 static float position_loop(float rad)
 {
-    float diff = cycle_diff(rad - motor_logic_angle, position_cycle);
+    float diff = cycle_diff(rad - motor_logic_angle, 2*PI);
     return arm_pid_f32(&pid_position, diff);
 }
 

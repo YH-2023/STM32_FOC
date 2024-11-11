@@ -1,1 +1,1 @@
-__attribute__((weak))在V6编译器中支持，在V5编译器中不支持，会造成进入Hrad Fault
+__attribute__((weak))在V6编译器中支持，在V5编译器中不支持，会造成进入Hard_Fault

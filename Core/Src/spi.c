@@ -159,6 +159,24 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef *spiHandle)
 #include "motor/motor_runtime_param.h"
 #include "motor/foc.h"
 #include "arm_math.h"
+#include <stdint.h>
+uint8_t calculate_crc(uint32_t data)
+{
+  uint8_t crc = 0;
+  uint32_t polynomial = 0x43; // (X^6 + X + 1)的二进制值
+
+  // (D[13:0] 和 Mg[3:0])
+  for (int i = 17; i >= 0; i--)
+  {
+    uint8_t bit = (data >> i) & 1;
+    crc <<= 1;
+    if ((crc >> 6) ^ bit)
+      crc ^= polynomial;
+    crc &= 0x3F;
+  }
+  return crc;
+}
+
 uint8_t mt6701_rx_data[3];
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
@@ -166,6 +184,17 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
   {
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
     int angle_raw = (mt6701_rx_data[1] >> 2) | (mt6701_rx_data[0] << 6);
+
+    // crc校验，不通过则放弃本次角度数据
+    uint8_t crc_raw = mt6701_rx_data[2] & ((1 << 6) - 1);
+    uint32_t crc_data = (mt6701_rx_data[0] << 16 | mt6701_rx_data[1] << 8 | mt6701_rx_data[2]) >> 6;
+    if (calculate_crc(crc_data) != crc_raw)
+    {
+      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+      HAL_SPI_TransmitReceive_DMA(&hspi1, mt6701_rx_data, mt6701_rx_data, 3);
+      return;
+    }
+
     encoder_angle = 2 * PI * angle_raw / ((1 << 14) - 1);
 
     static float encoder_angle_last = 0;

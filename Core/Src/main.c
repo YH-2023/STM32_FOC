@@ -115,8 +115,8 @@ int main(void)
   set_motor_pid(
       3.5, 0, 7,
       0.02, 0.001, 0,
-      1, 0.0004, 0,
-      1, 0.0004, 0);
+      1.2, 0.001, 0,
+      1.2, 0.001, 0);
 
   extern uint8_t mt6701_rx_data[3];
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
@@ -140,7 +140,7 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   motor_control_context.torque_norm_d = 0;
-  motor_control_context.torque_norm_q = 0.2;
+  motor_control_context.torque_norm_q = 0.4;
   motor_control_context.type = control_type_torque;
   HAL_Delay(1000);
   motor_control_context.position = deg2rad(90);

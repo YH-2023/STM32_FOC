@@ -64,7 +64,7 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN 0 */
 void set_pwm_duty(float d_u, float d_v, float d_w)
 {
-  d_u = min(d_u, 0.9);
+  d_u = min(d_u, 0.9); // 留出10%的电流采样时间
   d_v = min(d_v, 0.9);
   d_w = min(d_w, 0.9);
   __disable_irq();
@@ -115,8 +115,8 @@ int main(void)
   set_motor_pid(
       3.5, 0, 7,
       0.02, 0.001, 0,
-      1.2, 0.001, 0,
-      1.2, 0.001, 0);
+      1.2, 0.2, 0,
+      1.2, 0.2, 0);
 
   extern uint8_t mt6701_rx_data[3];
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
@@ -130,17 +130,17 @@ int main(void)
   HAL_ADCEx_Calibration_Start(&hadc2);
   HAL_ADCEx_InjectedStart_IT(&hadc1);
   HAL_ADCEx_InjectedStart(&hadc2);
-  set_pwm_duty(0.5, 0, 0);              // d轴强拖，形成SVPWM模型中的基础矢量1，即对应转子零度位置
-  HAL_Delay(400);                       // 保持一会
+  set_pwm_duty(0.5, 0, 0); // d轴强拖，形成SVPWM模型中的基础矢量1，即对应转子零度位置
+  HAL_Delay(400);          // 保持一会
   rotor_zero_angle = encoder_angle;
-  set_pwm_duty(0, 0, 0);                // 松开电机
+  set_pwm_duty(0, 0, 0); // 松开电机
   HAL_Delay(100);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   motor_control_context.torque_norm_d = 0;
-  motor_control_context.torque_norm_q = 0.4;
+  motor_control_context.torque_norm_q = 0.4; // 百分比强度
   motor_control_context.type = control_type_torque;
   HAL_Delay(1000);
   motor_control_context.position = deg2rad(90);
@@ -148,14 +148,10 @@ int main(void)
   // 速度模式
   // motor_control_context.speed = 30;       //每秒转30弧度
   // motor_control_context.type = control_type_speed;
-  //理论讲解以及FOC代码逐步实现讲解请前往查看：https://blog.csdn.net/qq570437459/category_12672491.html
+  // 理论讲解以及FOC代码逐步实现讲解请前往查看：https://blog.csdn.net/qq570437459/category_12672491.html
   while (1)
   {
-    //以下为了测试电流采样硬件是否正常
-    float u_1 = ADC_REFERENCE_VOLT * ((float)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1) / ((1 << ADC_BITS) - 1));
-    float u_2 = ADC_REFERENCE_VOLT * ((float)HAL_ADCEx_InjectedGetValue(&hadc2, ADC_INJECTED_RANK_1) / ((1 << ADC_BITS) - 1));
-
-    printf("%.3f,%.3f,%.3f\n", motor_logic_angle, u_1, u_2);
+    printf("%.3f\n", motor_logic_angle);
     HAL_Delay(100);
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET);
     HAL_Delay(100);

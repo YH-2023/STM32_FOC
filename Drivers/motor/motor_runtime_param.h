@@ -1,7 +1,7 @@
 #pragma once
 #include "conf.h"
-#define rotor_phy_angle (encoder_angle - rotor_zero_angle)     // 转子物理角度
-#define rotor_logic_angle rotor_phy_angle *POLE_PAIRS          // 转子逻辑角度（电角度）
+#define rotor_phy_angle (encoder_angle - rotor_zero_angle) // 转子物理角度
+#define rotor_logic_angle (rotor_phy_angle * POLE_PAIRS)   // 转子逻辑角度（电角度）
 extern float motor_i_u;
 extern float motor_i_v;
 extern float motor_i_d;

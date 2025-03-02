@@ -15,6 +15,9 @@
  *
  ******************************************************************************
  */
+#if defined(__ARMCC_VERSION) && (__ARMCC_VERSION < 6000000)
+#error "不支持使用 Keil ARM Compiler V5编译器，请使用 Keil ARM Compiler V6编译"
+#endif
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"

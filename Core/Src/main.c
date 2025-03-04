@@ -118,8 +118,8 @@ int main(void)
   set_motor_pid(
       3.5, 0, 7,
       0.02, 0.001, 0,
-      1.2, 0.2, 0,
-      1.2, 0.2, 0);
+      1.2, 0.02, 0,
+      1.2, 0.02, 0);
 
   extern uint8_t mt6701_rx_data[3];
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
